@@ -27,6 +27,10 @@ namespace NEP.MagPerception
 
         public MagazineData grabbedMagazineData { get; private set; }
 
+        public Hand playerLeftHand => BoneLib.Player.leftHand;
+        public Hand playerRightHand => BoneLib.Player.rightHand;
+
+        public Transform lastGrabbedTransform;
         public Gun lastGun;
         public Magazine lastMag;
         public Hand lastHand;
@@ -59,16 +63,50 @@ namespace NEP.MagPerception
             playerCamera = BoneLib.Player.playerHead;
         }
 
-        public void OnMagazineAttached(Magazine magazine, Hand hand)
+        public void OnGunAttached(Gun gun, Hand hand)
+        {
+            lastGun = gun;
+            lastGrabbedTransform = gun.shellSpawnTransform;
+            Magazine lastMagazine = lastMag;
+
+            OnMagazineAttached(lastMagazine, hand.handedness);
+        }
+
+        public void OnGunDetached(Gun gun, Hand hand)
+        {
+            lastGun = null;
+        }
+
+        public void OnEjectCartridge(Gun gun)
+        {
+            OnMagazineUpdated(gun.MagazineState);
+            magazineUI.OnMagEvent();
+        }
+
+        public void OnMagazineAttached(Magazine magazine, SLZ.Handedness hand)
         {
             var magazineState = magazine.magazineState;
             var magazineData = magazineState.magazineData;
             var cartridgeData = magazineState.cartridgeData;
 
             magazineUI.isBeingInteracted = true;
-            magazineUI.UpdateParent(hand.transform);
+            lastGrabbedTransform = magazine.transform;
+
+            magazineUI.UpdateParent(lastGrabbedTransform);
             magazineUI.UpdateMagazineText(magazineData.platform, magazineState.AmmoCount, magazineData.rounds, magazine._lastAmmoInventory.GetCartridgeCount(cartridgeData));
             magazineUI.gameObject.SetActive(true);
+
+            lastMag = magazine;
+        }
+
+        public void OnMagazineDetached()
+        {
+            lastMag = null;
+
+            if(lastGun != null)
+            {
+                magazineUI.UpdateParent(lastGun.shellSpawnTransform);
+            }
         }
 
         public void OnMagazineUpdated(MagazineState magazineState)

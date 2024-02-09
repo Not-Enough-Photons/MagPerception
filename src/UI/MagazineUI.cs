@@ -32,8 +32,6 @@ namespace NEP.MagPerception.UI
             get => MagPerceptionManager.instance.shellEjectorTransform.position;
         }
 
-        private Coroutine enableRoutine;
-
         private Dictionary<Weight, Color> weightColorTable = new Dictionary<Weight, Color>()
         {
             { Weight.LIGHT, Color.yellow },
@@ -41,41 +39,65 @@ namespace NEP.MagPerception.UI
             { Weight.HEAVY,  new Color(255, 47, 28)}
         };
 
+        private float timeSinceLastEvent = 0.0f;
+        private float maxTimeSinceEvent = 5.0f;
+        private bool fadeOut = false;
+
+        private float fadeOutTime = 0.0f;
+        private float fadeOutDuration = 1.0f;
+
+        private Vector3 targetPosition;
+        private Quaternion lastRotation;
+
         private void Awake()
         {
             animator = GetComponent<Animator>();
         }
-
-        private void OnEnable()
-        {
-            if(enableRoutine == null)
-            {
-                enableRoutine = MelonLoader.MelonCoroutines.Start(CoEnable()) as Coroutine;
-            }
-        }
-
-        private IEnumerator CoEnable()
-        {
-            animator?.Play("mag_enter_01");
-            yield return new WaitForSeconds(0.3f);
-            
-            while (isBeingInteracted)
-            {
-                animator?.Play("mag_idle_01");
-                yield return null;
-            }
-
-            animator?.Play("mag_exit_01");
-            yield return new WaitForSeconds(0.3f);
-            UpdateParent(MagPerceptionManager.instance.transform);
-            gameObject.SetActive(false);
-
-            enableRoutine = null;
-        }
-
-        private void Update()
+        
+        private void FixedUpdate()
         {
             transform.LookAt(BoneLib.Player.playerHead);
+
+            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, 8f * Time.fixedDeltaTime);
+            transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
+
+            UIShowType showType = MagPerceptionManager.instance.showType;
+
+            switch(showType)
+            {
+                case UIShowType.Always:
+                    return;
+                case UIShowType.FadeShow:
+                    if (Vector3.Distance(BoneLib.Player.playerHead.transform.position, transform.position) > 2f)
+                    {
+                        FadeOut();
+                        return;
+                    }
+
+                    timeSinceLastEvent += Time.deltaTime;
+                    
+                    if (timeSinceLastEvent > maxTimeSinceEvent)
+                    {
+                        timeSinceLastEvent = 0.0f;
+                        FadeOut();
+                    }
+                    break;
+                case UIShowType.Hide:
+                    gameObject.SetActive(false);
+                    break;
+            }
+        }
+
+        public void OnMagEvent()
+        {
+            UIShowType showType = MagPerceptionManager.instance.showType;
+
+            switch(showType)
+            {
+                case UIShowType.FadeShow:
+                    FadeIn();
+                    break;
+            }
         }
 
         public void UpdateMagazineText(string ammoType, int ammoCount, int maxAmmo, int ammoInventory)
@@ -88,7 +110,37 @@ namespace NEP.MagPerception.UI
         public void UpdateParent(Transform attachment)
         {
             transform.parent = attachment;
-            transform.localPosition = Vector3.zero;
+            targetPosition = Vector3.zero;
+        }
+
+        private void FadeIn()
+        {
+            timeSinceLastEvent = 0.0f;
+            if (fadeOut)
+            {
+                gameObject.SetActive(true);
+                animator?.Play("mag_enter_01");
+                fadeOut = false;
+            }
+        }
+
+        private void FadeOut()
+        {
+            if (!fadeOut)
+            {
+                animator?.SetTrigger("exit");
+                fadeOut = true;
+            }
+            else
+            {
+                fadeOutTime += Time.deltaTime;
+
+                if (fadeOutTime > fadeOutDuration)
+                {
+                    fadeOutTime = 0.0f;
+                    gameObject.SetActive(false);
+                }
+            }
         }
     }
 }

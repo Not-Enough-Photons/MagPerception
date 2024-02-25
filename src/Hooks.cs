@@ -9,69 +9,62 @@ namespace NEP.MagPerception
 {
     public static class Hooks
     {
-        public static System.Action<Magazine, Hand> OnHandGrabbedMagazine;
-         
-        [HarmonyLib.HarmonyPatch(typeof(Magazine))]
-        [HarmonyLib.HarmonyPatch(nameof(Magazine.OnGrab))]
-        public static class AttachMagObject
+        [HarmonyLib.HarmonyPatch(typeof(Magazine), nameof(Magazine.OnGrab))]
+        public static class OnMagAttached
         {
-            public static void Postfix(Magazine __instance, Hand hand)
+            public static void Postfix(Hand hand, Magazine __instance)
             {
-                if(hand.manager.name != "[RigManager (Blank)]")
-                {
-                    return;
-                }
-
-                MagPerceptionManager.instance.OnMagazineAttached(__instance, hand.handedness);
+                MagPerceptionManager.instance.OnMagazineAttached(__instance);
             }
         }
 
-        [HarmonyLib.HarmonyPatch(typeof(Magazine))]
-        [HarmonyLib.HarmonyPatch(nameof(Magazine.OnEject))]
-        public static class DetachMagObject
+        [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnTriggerGripAttached))]
+        public static class OnGunAttached
         {
-            public static void Postfix()
+            public static void Postfix(Gun __instance)
             {
-                MagPerceptionManager.instance.OnMagazineDetached();
+                MagPerceptionManager.instance.OnGunAttached(__instance);
             }
         }
 
-        [HarmonyLib.HarmonyPatch(typeof(Gun))]
-        [HarmonyLib.HarmonyPatch(nameof(Gun.OnTriggerGripAttached))]
-        public static class AttachGunObject
+        [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnTriggerGripDetached))]
+        public static class OnGunDetached
         {
-            public static void Postfix(Hand hand, Gun __instance)
+            public static void Postfix(Gun __instance)
             {
-                if(hand.manager.name != "[RigManager (Blank)]")
+                if (__instance == null)
                 {
                     return;
                 }
-
-                MagPerceptionManager.instance.OnGunAttached(__instance, hand);
-            }
-        }
-
-        [HarmonyLib.HarmonyPatch(typeof(Gun))]
-        [HarmonyLib.HarmonyPatch(nameof(Gun.OnTriggerGripDetached))]
-        public static class DetachGunObject
-        {
-            public static void Postfix(Hand hand, Gun __instance)
-            {
-                if(hand.manager.name != "[RigManager (Blank)]")
-                {
-                    return;
-                }
-
-                MagPerceptionManager.instance.OnGunDetached(__instance, hand);
+                
+                MagPerceptionManager.instance.OnGunDetached(__instance);
             }
         }
 
         [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.EjectCartridge))]
-        public static class OnEjectCartridge
+        public static class OnGunEjectRound
+        {
+            public static void Postfix()
+            {
+                MagPerceptionManager.instance.OnGunEjectRound();
+            }
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnMagazineInserted))]
+        public static class OnMagazineInserted
         {
             public static void Postfix(Gun __instance)
             {
-                MagPerceptionManager.instance.OnEjectCartridge(__instance);
+                MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
+            }
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(Gun), nameof(Gun.OnMagazineRemoved))]
+        public static class OnMagazineRemoved
+        {
+            public static void Postfix(Gun __instance)
+            {
+                MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
             }
         }
     }

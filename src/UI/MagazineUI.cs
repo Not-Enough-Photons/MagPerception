@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 using SLZ.Marrow.Data;
 using TMPro;
+using SLZ.Props.Weapons;
+using SLZ.Player;
+using SLZ.Props;
 
 namespace NEP.MagPerception.UI
 {
@@ -22,29 +25,11 @@ namespace NEP.MagPerception.UI
 
         public bool isBeingInteracted { get; set; } = false;
 
-        private Vector3 lastHandPos
-        {
-            get => MagPerceptionManager.instance.lastHand.transform.position;
-        }
-
-        private Vector3 shellEjectorPos
-        {
-            get => MagPerceptionManager.instance.shellEjectorTransform.position;
-        }
-
-        private Dictionary<Weight, Color> weightColorTable = new Dictionary<Weight, Color>()
-        {
-            { Weight.LIGHT, Color.yellow },
-            { Weight.MEDIUM, new Color(1f, 0.6372304f, 0f) },
-            { Weight.HEAVY,  new Color(255, 47, 28)}
-        };
-
         private float timeSinceLastEvent = 0.0f;
-        private float maxTimeSinceEvent = 5.0f;
         private bool fadeOut = false;
 
         private float fadeOutTime = 0.0f;
-        private float fadeOutDuration = 1.0f;
+        private float fadeOutDuration = 0.25f;
 
         private Vector3 targetPosition;
         private Quaternion lastRotation;
@@ -58,50 +43,103 @@ namespace NEP.MagPerception.UI
         {
             transform.LookAt(BoneLib.Player.playerHead);
 
-            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, 8f * Time.fixedDeltaTime);
+            transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + Settings.Offset, 8f * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);
 
-            UIShowType showType = MagPerceptionManager.instance.showType;
+            UIShowType showType = Settings.ShowType;
 
             switch(showType)
             {
-                case UIShowType.Always:
-                    return;
                 case UIShowType.FadeShow:
-                    if (Vector3.Distance(BoneLib.Player.playerHead.transform.position, transform.position) > 2f)
-                    {
-                        FadeOut();
-                        return;
-                    }
-
                     timeSinceLastEvent += Time.deltaTime;
                     
-                    if (timeSinceLastEvent > maxTimeSinceEvent)
+                    if (timeSinceLastEvent > Settings.TimeUntilHidden)
                     {
                         timeSinceLastEvent = 0.0f;
                         FadeOut();
                     }
                     break;
                 case UIShowType.Hide:
-                    gameObject.SetActive(false);
+                    Hide();
                     break;
             }
         }
 
+        public void Show()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public void Hide()
+        {
+            gameObject.SetActive(false);
+        }
+
         public void OnMagEvent()
         {
-            UIShowType showType = MagPerceptionManager.instance.showType;
+            UIShowType showType = Settings.ShowType;
 
             switch(showType)
             {
                 case UIShowType.FadeShow:
                     FadeIn();
                     break;
+                case UIShowType.Hide:
+                    Hide();
+                    break;
             }
         }
 
-        public void UpdateMagazineText(string ammoType, int ammoCount, int maxAmmo, int ammoInventory)
+        public void DisplayGunInfo(Gun gun)
         {
+            string counterText = "";
+            var magazineState = gun.MagazineState;
+
+            if (magazineState == null)
+            {
+                counterText = gun.chamberedCartridge != null ? "+1/0" : "0/0";
+                ammoCounterText.text = counterText;
+                ammoInventoryText.text = "RESERVE: None";
+                ammoTypeText.text = "Unknown";
+                MelonLoader.MelonLogger.Msg("Empty mag");
+                return;
+            }
+
+            bool toppedOff = gun.chamberedCartridge != null && magazineState.AmmoCount == magazineState.magazineData.rounds;
+
+            int ammoCount = magazineState.AmmoCount;
+            int maxAmmo = magazineState.magazineData.rounds;
+            string ammoType = magazineState.magazineData.platform;
+
+            var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
+
+            if (toppedOff)
+            {
+                counterText = $"{ammoCount}+1/{maxAmmo}";
+            }
+            else
+            {
+                counterText = $"{ammoCount}/{maxAmmo}";
+            }
+
+            ammoCounterText.text = counterText;
+            ammoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
+            ammoTypeText.text = ammoType;
+        }
+
+        public void DisplayMagInfo(MagazineState magazineState)
+        {
+            if (magazineState == null)
+            {
+                return;
+            }
+
+            int ammoCount = magazineState.AmmoCount;
+            int maxAmmo = magazineState.magazineData.rounds;
+            string ammoType = magazineState.magazineData.platform;
+            
+            var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
+
             ammoCounterText.text = $"{ammoCount}/{maxAmmo}";
             ammoInventoryText.text = "RESERVE: " + ammoInventory.ToString();
             ammoTypeText.text = ammoType;
@@ -110,7 +148,6 @@ namespace NEP.MagPerception.UI
         public void UpdateParent(Transform attachment)
         {
             transform.parent = attachment;
-            targetPosition = Vector3.zero;
         }
 
         private void FadeIn()

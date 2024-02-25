@@ -5,7 +5,7 @@ namespace NEP.MagPerception
 {
     static partial class BuildInfo
     {
-		public const int Epoch = 1707451384;
-		public const string GitCommit = "743077e566916fa6a0123027cddaa8fc539a85b0";
+		public const int Epoch = 1708744760;
+		public const string GitCommit = "18e9a03a7fa240597d75355b8f1defcdb5cbf3c5";
     }
 }

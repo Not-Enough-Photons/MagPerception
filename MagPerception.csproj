@@ -41,6 +41,7 @@
     <Compile Include="src\UI\UIHandType.cs" />
     <Compile Include="src\UI\UIShowType.cs" />
     <Compile Include="src\UI\MagazineUI.cs" />
+    <Compile Include="src\Utilities\Settings.cs" />
     <Compile Include="src\Utilities\Utilities.cs" />
   </ItemGroup>
   <ItemGroup>

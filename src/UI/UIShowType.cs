@@ -3,7 +3,6 @@
     public enum UIShowType
     {
         Hide,
-        FadeShow,
-        Always
+        FadeShow
     }
 }

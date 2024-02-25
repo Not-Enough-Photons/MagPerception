@@ -46,8 +46,14 @@ namespace NEP.MagPerception
         {
             var nepCategory = MenuManager.CreateCategory("Not Enough Photons", Color.white);
             var mainCategory = nepCategory.CreateCategory("MagPerception", Color.white);
-            mainCategory.CreateEnumElement("Show On Hand", Color.white, UIHandType.Left, (handType) => manager.handType = (UIHandType)handType);
-            mainCategory.CreateEnumElement("Show Type", Color.white, UIShowType.Always, (showType) => manager.showType = (UIShowType)showType);
+            var offsetCategory = mainCategory.CreateCategory("Offset", Color.white);
+
+            mainCategory.CreateEnumElement("Show Type", Color.white, UIShowType.FadeShow, (showType) => Settings.ShowType = (UIShowType)showType);
+            mainCategory.CreateFloatElement("Time Until Hidden", Color.white, 3f, 0.5f, 0f, 10f, (value) => Settings.TimeUntilHidden = value);
+
+            offsetCategory.CreateFloatElement("X", Color.red, 0.075f, 0.025f, -1f, 1f, (value) => Settings.Offset.x = value);
+            offsetCategory.CreateFloatElement("Y", Color.green, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.y = value);
+            offsetCategory.CreateFloatElement("Z", Color.blue, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.z = value);
         }
 
         public void OnSceneWasLoaded(LevelInfo info)

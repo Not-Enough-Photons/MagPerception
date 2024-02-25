@@ -6,10 +6,10 @@ using SLZ.Props.Weapons;
 using SLZ.Marrow.Data;
 
 using NEP.MagPerception.UI;
-using SLZ.Props;
 
 using TMPro;
-using SLZ.Player;
+using SLZ.Props;
+using MelonLoader;
 
 namespace NEP.MagPerception
 {
@@ -22,9 +22,6 @@ namespace NEP.MagPerception
 
         public MagazineUI magazineUI { get; private set; }
 
-        public UIHandType handType { get; set; }
-        public UIShowType showType { get; set; }
-
         public MagazineData grabbedMagazineData { get; private set; }
 
         public Hand playerLeftHand => BoneLib.Player.leftHand;
@@ -34,12 +31,6 @@ namespace NEP.MagPerception
         public Gun lastGun;
         public Magazine lastMag;
         public Hand lastHand;
-
-        public Transform shellEjectorTransform { get; private set; }
-
-        private Transform playerCamera;
-
-        private bool triggerUIOnce = false;
 
         private void Awake()
         {
@@ -59,68 +50,77 @@ namespace NEP.MagPerception
             magazineUI.animator = magUI.GetComponent<Animator>();
 
             magUI.SetActive(false);
-
-            playerCamera = BoneLib.Player.playerHead;
         }
 
-        public void OnGunAttached(Gun gun, Hand hand)
+        /// <summary>
+        /// Called when a player grabs a magazine.
+        /// </summary>
+        public void OnMagazineAttached(Magazine magazine)
         {
-            lastGun = gun;
-            lastGrabbedTransform = gun.shellSpawnTransform;
-            Magazine lastMagazine = lastMag;
+            lastMag = magazine;
+            magazineUI.OnMagEvent();
+            magazineUI.UpdateParent(lastMag.transform);
 
-            OnMagazineAttached(lastMagazine, hand.handedness);
+            magazineUI.DisplayMagInfo(magazine.magazineState);
         }
 
-        public void OnGunDetached(Gun gun, Hand hand)
+        /// <summary>
+        /// Called when the player inserts a magazine into their gun.
+        /// </summary>
+        public void OnMagazineInserted(MagazineState magazineState, Gun gun)
+        {
+            magazineUI.Show();
+            lastGun = gun;
+            magazineUI.OnMagEvent();
+            magazineUI.UpdateParent(lastGun.firePointTransform);
+            magazineUI.DisplayGunInfo(lastGun);
+        }
+
+        /// <summary>
+        /// Called when the player ejects the magazine from their gun.
+        /// </summary>
+        public void OnMagazineEjected(MagazineState magazineState, Gun gun)
+        {
+            MelonLogger.Msg("Mag ejected");
+            magazineUI.Show();
+            magazineUI.OnMagEvent();
+            magazineUI.UpdateParent(lastGun.firePointTransform);
+            magazineUI.DisplayGunInfo(lastGun);
+        }
+
+        /// <summary>
+        /// Called when a player grabs a gun.
+        /// </summary>
+        public void OnGunAttached(Gun gun)
+        {
+            magazineUI.OnMagEvent();
+            magazineUI.UpdateParent(gun.firePointTransform);
+            lastGun = gun;
+            magazineUI.Show();
+        }
+
+        /// <summary>
+        /// Called when a player lets go of a gun.
+        /// </summary>
+        public void OnGunDetached(Gun gun)
         {
             lastGun = null;
-        }
-
-        public void OnEjectCartridge(Gun gun)
-        {
-            OnMagazineUpdated(gun.MagazineState);
             magazineUI.OnMagEvent();
-        }
 
-        public void OnMagazineAttached(Magazine magazine, SLZ.Handedness hand)
-        {
-            var magazineState = magazine.magazineState;
-            var magazineData = magazineState.magazineData;
-            var cartridgeData = magazineState.cartridgeData;
-
-            magazineUI.isBeingInteracted = true;
-            lastGrabbedTransform = magazine.transform;
-
-            magazineUI.UpdateParent(lastGrabbedTransform);
-            magazineUI.UpdateMagazineText(magazineData.platform, magazineState.AmmoCount, magazineData.rounds, magazine._lastAmmoInventory.GetCartridgeCount(cartridgeData));
-            magazineUI.gameObject.SetActive(true);
-
-            lastMag = magazine;
-        }
-
-        public void OnMagazineDetached()
-        {
-            lastMag = null;
-
-            if(lastGun != null)
+            if(lastMag != null)
             {
-                magazineUI.UpdateParent(lastGun.shellSpawnTransform);
+                magazineUI.UpdateParent(gun.firePointTransform);
+                magazineUI.DisplayMagInfo(lastMag.magazineState);
             }
         }
 
-        public void OnMagazineUpdated(MagazineState magazineState)
+        /// <summary>
+        /// Called when a round (spent or unspent) is ejected from the chamber.
+        /// </summary>
+        public void OnGunEjectRound()
         {
-            var magazineData = magazineState.magazineData;
-            var cartridgeData = magazineState.cartridgeData;
-
-            magazineUI.UpdateMagazineText(magazineData.platform, magazineState.AmmoCount, magazineState.magazineData.rounds, AmmoInventory.Instance.GetCartridgeCount(cartridgeData));
-        }
-
-        public void OnMagazineEjected(Magazine magazine)
-        {
-            magazineUI.isBeingInteracted = false;
-            magazineUI.gameObject.SetActive(false);
+            magazineUI.OnMagEvent();
+            magazineUI.DisplayGunInfo(lastGun);
         }
     }
 }

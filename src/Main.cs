@@ -48,8 +48,10 @@ namespace NEP.MagPerception
             var mainCategory = nepCategory.CreateCategory("MagPerception", Color.white);
             var offsetCategory = mainCategory.CreateCategory("Offset", Color.white);
 
+            mainCategory.CreateFloatElement("Scale", Color.white, 0.75f, 0.25f, 0.25f, 1.5f, (value) => Settings.InfoScale = value);
             mainCategory.CreateEnumElement("Show Type", Color.white, UIShowType.FadeShow, (showType) => Settings.ShowType = (UIShowType)showType);
             mainCategory.CreateFloatElement("Time Until Hidden", Color.white, 3f, 0.5f, 0f, 10f, (value) => Settings.TimeUntilHidden = value);
+            mainCategory.CreateBoolElement("Show With Gun", Color.white, false, (value) => Settings.ShowWithGun = value);
 
             offsetCategory.CreateFloatElement("X", Color.red, 0.075f, 0.025f, -1f, 1f, (value) => Settings.Offset.x = value);
             offsetCategory.CreateFloatElement("Y", Color.green, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.y = value);

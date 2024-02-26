@@ -58,9 +58,9 @@ namespace NEP.MagPerception
         public void OnMagazineAttached(Magazine magazine)
         {
             lastMag = magazine;
+            magazineUI.Show();
             magazineUI.OnMagEvent();
-            magazineUI.UpdateParent(lastMag.transform);
-
+            magazineUI.UpdateParent(lastMag.insertPointTransform);
             magazineUI.DisplayMagInfo(magazine.magazineState);
         }
 
@@ -69,8 +69,8 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnMagazineInserted(MagazineState magazineState, Gun gun)
         {
-            magazineUI.Show();
             lastGun = gun;
+            magazineUI.Show();
             magazineUI.OnMagEvent();
             magazineUI.UpdateParent(lastGun.firePointTransform);
             magazineUI.DisplayGunInfo(lastGun);
@@ -81,7 +81,6 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnMagazineEjected(MagazineState magazineState, Gun gun)
         {
-            MelonLogger.Msg("Mag ejected");
             magazineUI.Show();
             magazineUI.OnMagEvent();
             magazineUI.UpdateParent(lastGun.firePointTransform);
@@ -93,6 +92,11 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnGunAttached(Gun gun)
         {
+            if (!Settings.ShowWithGun)
+            {
+                return;
+            }
+
             magazineUI.OnMagEvent();
             magazineUI.UpdateParent(gun.firePointTransform);
             lastGun = gun;
@@ -104,6 +108,11 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnGunDetached(Gun gun)
         {
+            if (!Settings.ShowWithGun)
+            {
+                return;
+            }
+
             lastGun = null;
             magazineUI.OnMagEvent();
 
@@ -119,6 +128,11 @@ namespace NEP.MagPerception
         /// </summary>
         public void OnGunEjectRound()
         {
+            if (!Settings.ShowWithGun)
+            {
+                return;
+            }
+
             magazineUI.OnMagEvent();
             magazineUI.DisplayGunInfo(lastGun);
         }

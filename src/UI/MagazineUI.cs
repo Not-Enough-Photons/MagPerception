@@ -41,6 +41,7 @@ namespace NEP.MagPerception.UI
         
         private void FixedUpdate()
         {
+            transform.localScale = new Vector3(-1f, 1f, 1f) * Settings.InfoScale;
             transform.LookAt(BoneLib.Player.playerHead);
 
             transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + Settings.Offset, 8f * Time.fixedDeltaTime);
@@ -92,6 +93,13 @@ namespace NEP.MagPerception.UI
 
         public void DisplayGunInfo(Gun gun)
         {
+            if (gun == null)
+            {
+                // Chances are you are charging the gun with your hand off the main grip.
+                // Will fix in the future.
+                return;
+            }
+            
             string counterText = "";
             var magazineState = gun.MagazineState;
 
@@ -101,7 +109,6 @@ namespace NEP.MagPerception.UI
                 ammoCounterText.text = counterText;
                 ammoInventoryText.text = "RESERVE: None";
                 ammoTypeText.text = "Unknown";
-                MelonLoader.MelonLogger.Msg("Empty mag");
                 return;
             }
 

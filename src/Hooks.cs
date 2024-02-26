@@ -14,6 +14,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Hand hand, Magazine __instance)
             {
+                MelonLogger.Msg("Mag Attached");
                 MagPerceptionManager.instance.OnMagazineAttached(__instance);
             }
         }
@@ -23,6 +24,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
+                MelonLogger.Msg("Gun Attached");
                 MagPerceptionManager.instance.OnGunAttached(__instance);
             }
         }
@@ -37,6 +39,7 @@ namespace NEP.MagPerception
                     return;
                 }
                 
+                MelonLogger.Msg("Gun Detached");
                 MagPerceptionManager.instance.OnGunDetached(__instance);
             }
         }
@@ -46,6 +49,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix()
             {
+                MelonLogger.Msg("Eject Round");
                 MagPerceptionManager.instance.OnGunEjectRound();
             }
         }
@@ -55,6 +59,7 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
+                MelonLogger.Msg("Mag Inserted");
                 MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
             }
         }
@@ -64,7 +69,17 @@ namespace NEP.MagPerception
         {
             public static void Postfix(Gun __instance)
             {
+                MelonLogger.Msg("Mag Removed");
                 MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
+            }
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(AmmoPlug), nameof(AmmoPlug.OnPlugInsertComplete))]
+        public static class OnRoundInserted
+        {
+            public static void Postfix(AmmoPlug __instance)
+            {
+                MelonLogger.Msg($"Round {__instance.name} inserted");
             }
         }
     }

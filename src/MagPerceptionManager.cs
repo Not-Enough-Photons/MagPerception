@@ -97,9 +97,9 @@ namespace NEP.MagPerception
                 return;
             }
 
+            lastGun = gun;
             magazineUI.OnMagEvent();
             magazineUI.UpdateParent(gun.firePointTransform);
-            lastGun = gun;
             magazineUI.Show();
         }
 

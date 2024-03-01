@@ -38,7 +38,7 @@ namespace NEP.MagPerception.UI
         {
             animator = GetComponent<Animator>();
         }
-        
+
         private void FixedUpdate()
         {
             transform.localScale = new Vector3(-1f, 1f, 1f) * Settings.InfoScale;
@@ -49,20 +49,24 @@ namespace NEP.MagPerception.UI
 
             UIShowType showType = Settings.ShowType;
 
-            switch(showType)
+            if (showType == UIShowType.Always)
             {
-                case UIShowType.FadeShow:
-                    timeSinceLastEvent += Time.deltaTime;
-                    
-                    if (timeSinceLastEvent > Settings.TimeUntilHidden)
-                    {
-                        timeSinceLastEvent = 0.0f;
-                        FadeOut();
-                    }
-                    break;
-                case UIShowType.Hide:
-                    Hide();
-                    break;
+                Show();
+                return;
+            }
+            else if (showType == UIShowType.FadeShow)
+            {
+                timeSinceLastEvent += Time.deltaTime;
+
+                if (timeSinceLastEvent > Settings.TimeUntilHidden)
+                {
+                    timeSinceLastEvent = 0.0f;
+                    FadeOut();
+                }
+            }
+            else if (showType == UIShowType.Hide)
+            {
+                Hide();
             }
         }
 
@@ -80,14 +84,17 @@ namespace NEP.MagPerception.UI
         {
             UIShowType showType = Settings.ShowType;
 
-            switch(showType)
+            if (showType == UIShowType.Always)
             {
-                case UIShowType.FadeShow:
-                    FadeIn();
-                    break;
-                case UIShowType.Hide:
-                    Hide();
-                    break;
+                // undefined
+            }
+            else if (showType == UIShowType.FadeShow)
+            {
+                FadeIn();
+            }
+            else if(showType == UIShowType.Hide)
+            {
+                Hide();
             }
         }
 
@@ -99,7 +106,7 @@ namespace NEP.MagPerception.UI
                 // Will fix in the future.
                 return;
             }
-            
+
             string counterText = "";
             var magazineState = gun.MagazineState;
 
@@ -144,7 +151,7 @@ namespace NEP.MagPerception.UI
             int ammoCount = magazineState.AmmoCount;
             int maxAmmo = magazineState.magazineData.rounds;
             string ammoType = magazineState.magazineData.platform;
-            
+
             var ammoInventory = AmmoInventory.Instance.GetCartridgeCount(magazineState.cartridgeData);
 
             ammoCounterText.text = $"{ammoCount}/{maxAmmo}";

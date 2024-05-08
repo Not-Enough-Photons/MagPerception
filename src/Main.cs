@@ -21,20 +21,16 @@ namespace NEP.MagPerception
 
     public class Main : MelonMod
     {
-        private static string dataPath = MelonUtils.UserDataDirectory + "/Not Enough Photons/MagPerception/mp_resources.pack";
-
-        private MagPerceptionManager manager;
-
         public static AssetBundle resources { get; private set; }
 
         public override void OnInitializeMelon()
         {
-            resources = AssetBundle.LoadFromFile(dataPath);
+            resources = DataManager.GetEmbeddedBundle();
 
             if (resources == null)
             {
                 throw new System.Exception(
-                    "Resources file is missing/invalid! Please make sure you installed the file in UserData/MagPerception !");
+                    "Resources file is missing/invalid!");
             }
 
             SetupBonemenu();
@@ -60,7 +56,7 @@ namespace NEP.MagPerception
 
         public void OnSceneWasLoaded(LevelInfo info)
         {
-            manager = new GameObject("Mag Perception Manager").AddComponent<MagPerceptionManager>();
+            new GameObject("Mag Perception Manager").AddComponent<MagPerceptionManager>();
         }
 
         public static Object GetObjectFromResources(string name)

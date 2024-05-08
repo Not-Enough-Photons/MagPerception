@@ -67,14 +67,5 @@ namespace NEP.MagPerception
                 MagPerceptionManager.instance.OnMagazineInserted(__instance.MagazineState, __instance);
             }
         }
-
-        [HarmonyLib.HarmonyPatch(typeof(AmmoPlug), nameof(AmmoPlug.OnPlugInsertComplete))]
-        public static class OnRoundInserted
-        {
-            public static void Postfix(AmmoPlug __instance)
-            {
-                MelonLogger.Msg($"Round {__instance.name} inserted");
-            }
-        }
     }
 }

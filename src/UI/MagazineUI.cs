@@ -1,14 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UnityEngine;
 
-using UnityEngine;
-using UnityEngine.UI;
-
-using SLZ.Marrow.Data;
-using TMPro;
-using SLZ.Props.Weapons;
-using SLZ.Player;
-using SLZ.Props;
+using Il2CppSLZ.Marrow;
+using Il2CppTMPro;
 
 namespace NEP.MagPerception.UI
 {
@@ -42,7 +35,7 @@ namespace NEP.MagPerception.UI
         private void FixedUpdate()
         {
             transform.localScale = new Vector3(-1f, 1f, 1f) * Settings.InfoScale;
-            transform.LookAt(BoneLib.Player.playerHead);
+            transform.LookAt(BoneLib.Player.Head);
 
             transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + Settings.Offset, 8f * Time.fixedDeltaTime);
             transform.rotation = Quaternion.Slerp(lastRotation, transform.rotation, 8f * Time.fixedDeltaTime);

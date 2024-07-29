@@ -1,1 +1,0 @@
-call build.py quest qrun logcat

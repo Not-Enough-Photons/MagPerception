@@ -1,9 +1,4 @@
-﻿using UnityEngine;
-
-using SLZ.Combat;
-using SLZ.Interaction;
-using SLZ.Props.Weapons;
-using MelonLoader;
+﻿using Il2CppSLZ.Marrow;
 
 namespace NEP.MagPerception
 {

@@ -1,12 +1,14 @@
-﻿using MelonLoader;
+﻿using System.Linq;
+using System.Reflection;
 
-using BoneLib.BoneMenu;
-using NEP.MagPerception.UI;
+using MelonLoader;
 
 using UnityEngine;
 
-using System.Linq;
 using BoneLib;
+using BoneLib.BoneMenu;
+
+using NEP.MagPerception.UI;
 
 namespace NEP.MagPerception
 {
@@ -15,7 +17,7 @@ namespace NEP.MagPerception
         public const string Name = "MagPerception"; // Name of the Mod.  (MUST BE SET)
         public const string Author = null; // Author of the Mod.  (Set as null if none)
         public const string Company = null; // Company that made the Mod.  (Set as null if none)
-        public const string Version = "1.0.0"; // Version of the Mod.  (MUST BE SET)
+        public const string Version = "1.1.0"; // Version of the Mod.  (MUST BE SET)
         public const string DownloadLink = null; // Download Link for the Mod.  (Set as null if none)
     }
 
@@ -25,7 +27,11 @@ namespace NEP.MagPerception
 
         public override void OnInitializeMelon()
         {
-            resources = DataManager.GetEmbeddedBundle();
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            string bundlePath = "NEP.MagPerception.Resources.";
+            string targetBundle = HelperMethods.IsAndroid() ? "mp_resources_quest.pack" : "mp_resources_pcvr.pack";
+
+            resources = HelperMethods.LoadEmbeddedAssetBundle(assembly, bundlePath + targetBundle);
 
             if (resources == null)
             {
@@ -35,23 +41,23 @@ namespace NEP.MagPerception
 
             SetupBonemenu();
 
-            BoneLib.Hooking.OnLevelInitialized += OnSceneWasLoaded;
+            Hooking.OnLevelLoaded += OnSceneWasLoaded;
         }
 
         private void SetupBonemenu()
         {
-            var nepCategory = MenuManager.CreateCategory("Not Enough Photons", Color.white);
-            var mainCategory = nepCategory.CreateCategory("MagPerception", Color.white);
-            var offsetCategory = mainCategory.CreateCategory("Offset", Color.white);
+            var nepCategory = Page.Root.CreatePage("Not Enough Photons", Color.white);
+            var mainCategory = nepCategory.CreatePage("MagPerception", Color.white);
+            var offsetCategory = mainCategory.CreatePage("Offset", Color.white);
 
-            mainCategory.CreateFloatElement("Scale", Color.white, 0.75f, 0.25f, 0.25f, 1.5f, (value) => Settings.InfoScale = value);
-            mainCategory.CreateEnumElement("Show Type", Color.white, UIShowType.FadeShow, (showType) => Settings.ShowType = (UIShowType)showType);
-            mainCategory.CreateFloatElement("Time Until Hidden", Color.white, 3f, 0.5f, 0f, 10f, (value) => Settings.TimeUntilHidden = value);
-            mainCategory.CreateBoolElement("Show With Gun", Color.white, false, (value) => Settings.ShowWithGun = value);
+            mainCategory.CreateFloat("Scale", Color.white, 0.75f, 0.25f, 0.25f, 1.5f, (value) => Settings.InfoScale = value);
+            mainCategory.CreateEnum("Show Type", Color.white, UIShowType.FadeShow, (showType) => Settings.ShowType = (UIShowType)showType);
+            mainCategory.CreateFloat("Time Until Hidden", Color.white, 3f, 0.5f, 0f, 10f, (value) => Settings.TimeUntilHidden = value);
+            mainCategory.CreateBool("Show With Gun", Color.white, false, (value) => Settings.ShowWithGun = value);
 
-            offsetCategory.CreateFloatElement("X", Color.red, 0.075f, 0.025f, -1f, 1f, (value) => Settings.Offset.x = value);
-            offsetCategory.CreateFloatElement("Y", Color.green, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.y = value);
-            offsetCategory.CreateFloatElement("Z", Color.blue, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.z = value);
+            offsetCategory.CreateFloat("X", Color.red, 0.075f, 0.025f, -1f, 1f, (value) => Settings.Offset.x = value);
+            offsetCategory.CreateFloat("Y", Color.green, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.y = value);
+            offsetCategory.CreateFloat("Z", Color.blue, 0f, 0.025f, -1f, 1f, (value) => Settings.Offset.z = value);
         }
 
         public void OnSceneWasLoaded(LevelInfo info)

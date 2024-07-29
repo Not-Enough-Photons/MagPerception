@@ -1,15 +1,10 @@
 ﻿using UnityEngine;
 
-using SLZ.Interaction;
-using SLZ.Props.Weapons;
-
-using SLZ.Marrow.Data;
-
 using NEP.MagPerception.UI;
 
-using TMPro;
-using SLZ.Props;
-using MelonLoader;
+using Il2CppSLZ.Marrow;
+using Il2CppSLZ.Marrow.Data;
+using Il2CppTMPro;
 
 namespace NEP.MagPerception
 {
@@ -24,8 +19,8 @@ namespace NEP.MagPerception
 
         public MagazineData grabbedMagazineData { get; private set; }
 
-        public Hand playerLeftHand => BoneLib.Player.leftHand;
-        public Hand playerRightHand => BoneLib.Player.rightHand;
+        public Hand playerLeftHand => BoneLib.Player.LeftHand;
+        public Hand playerRightHand => BoneLib.Player.RightHand;
 
         public Transform lastGrabbedTransform;
         public Gun lastGun;
